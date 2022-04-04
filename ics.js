@@ -1,6 +1,6 @@
 // Data will be stored in this
 let data;
-
+const comments = document.querySelector(".comments");
 const url = "./data.json";
 let jdata;
 const initialise = async () => {
@@ -86,36 +86,92 @@ const createHTMLElements = () => {
 
     }
 
-function btnEdit(){}
-function btnReply(){}
-function btnDelete(){}
 
+    function createInput(is_reply, is_edit,  parent) {
+        const getinput=document.createElement("div");
+        getinput.classList.add("getinput");
+        const img=new Image();
+        img.src=data.currentUser.image.png;
+        getinput.append(img);
+        const inp=document.createElement("input");
+        inp.setAttribute("type","text");
+        inp.setAttribute("placeholder", (is_reply) ? "Add a reply" : "Add a comment")
+ getinput.append(inp);
+ const submit=document.createElement("div");
+ submit.classList.add("submit");
+ submit.innerHTML=(is_reply) ? "REPLY" : "SEND";
+ submit.addEventListener("click",processInput);
+ getinput.append(submit);
 
+ getinput.ICSis_reply=is_reply;
+ getinput.ICSis_edit=is_edit;
+ getinput.ICSparent=parent;
 
+ return getinput;
+    }
 
-    console.log(data);
-    const comments = document.querySelector(".comments");
-    data.comments.forEach(c => {
-        const newElement = createElement(false, c.id, c.content, c.createdAt, c.score, c.user.image.png, c.user.username,( c.username == data.currentUser.username));
-
-        comments.append(newElement);
-        
+function getHighestId(){
+    highestID=0;
+    data.comments.forEach(c=>{
+        highestID=Math.max(highestID,c.id);
         c.replies.forEach(r=>{
-   console.log(r.user.username)
-            const newReply=createElement(true,r.id, r.content, r.createdAt, r.score, r.user.image.png,  r.user.username,   ( r.user.username == data.currentUser.username))
-
-comments.append(newReply);
-
-
-
-
+            highestID=Math.max(highestID, r.id);
         })
+    })
+    return highestID;
+}
+
+    function btnEdit() {}
+
+    function btnReply() {}
+
+    function btnDelete() {}
+
+    function processInput(e){
+const is_reply=e.srcElement.parentElement.ICSis_reply;
+const is_edit=e.srcElement.parentElement.ICSis_edit;
+const ICSparent=e.srcElement.parentElement.ICSparent;
+const input=e.srcElement.parentElement.children[1].value;
+
+if(!input) return;
+
+// Add brand new comment
+if (!( is_edit||is_reply||ICSparent)){
+const highestID=getHighestId();
+const d = new Date();
+const newComment={
+id:highestID+1,
+content:input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+createdAt:d.getDate()  + "-" + (d.getMonth()+1) + "-" + d.getFullYear(),
+score:0,
+user:data.currentUser,
+replies:[]
+}
+data.comments.push(newComment);
+
+}
+
+
+    }
 
 
 
+    //console.log(data);
+    function showComments(){
 
+    comments.innerHTML="";
+    data.comments.forEach(c => {
+        const newElement = createElement(false, c.id, c.content, c.createdAt, c.score, c.user.image.png, c.user.username, (c.username == data.currentUser.username));
+        comments.append(newElement);
+        c.replies.forEach(r => {
+            const newReply = createElement(true, r.id, r.content, r.createdAt, r.score, r.user.image.png, r.user.username, (r.user.username == data.currentUser.username))
+  comments.append(newReply);
+        })
     });
+    const newReply=createInput(false, false, false);
+comments.append(newReply);
+    }
 
-
+initialise();
 
 }

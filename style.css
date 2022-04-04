@@ -190,7 +190,7 @@ background-color: var(--light-gray);
     width: 100%;
     background: white;
     margin-bottom: 30px;
-    padding-bottom:20px 0;
+    padding:20px 0;
     grid-template-columns: 60px auto 120px;
     grid-template-rows:  minmax(100px, auto ) ;  
    align-items: top;
