@@ -135,7 +135,7 @@ oldOnes.forEach(elem=> elem.parentNode.removeChild(elem))
         inp.setAttribute("placeholder", (elemData.is_reply) ? "Add a reply" : "Add a comment")
  }
 
-if(  (!elemData.is_edit) && elemData.author.username){
+if(  (!elemData.is_edit) && elemData.author.username  && (!elemData.suppress_reply_to) ){
     inp.innerHTML="@"+ elemData.author.username + "  ";
 }
 
@@ -357,7 +357,8 @@ return 0;
             author: Object.assign(data.currentUser),
             replyingToComment: null,
             replyingToUser: null,
-            IamAuthor: false
+            IamAuthor: false,
+            suppress_reply_to:true
         })
 
     )
