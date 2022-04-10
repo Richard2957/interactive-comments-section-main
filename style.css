@@ -58,10 +58,9 @@ body::after {
 
 
 .content {
-    width: 730px;
+    max-width: 730px;
     margin: 60px auto 60px auto;
-    border: 1px black ridge;
-    ;
+    position:relative;
 }
 
 
@@ -87,7 +86,7 @@ overflow:hidden;
         ". text text"
     ;
 
-    animation:entry 1s ease forwards;
+    animation:entry .5s ease forwards;
 }
 
 @keyframes entry {
@@ -148,18 +147,22 @@ background-color: var(--light-gray);
 
 .buttons>* {
     width: 100px;
-    border: 2px red solid;
-    text-decoration: none;
+   text-decoration: none;
 }
 
 .button-delete {
     color: var(--soft-red);
 }
 
-.button-reply {
+.button-reply, .button-edit {
     color: var(--moderate-blue);
 }
-
+.button-delete:hover{
+    color:var(--pale-red)
+}
+.button-reply:hover, .button-edit:hover{
+    color:var(--light-grayish-blue)
+}
 
 .scoreboard {
 
@@ -169,7 +172,6 @@ background-color: var(--light-gray);
     flex-direction: column;
     justify-content: flex-end;
     align-items: flex-end;
-    border: 2px solid rgb(80, 65, 70);
 }
 
 .scoreboard>div {
@@ -183,12 +185,16 @@ background-color: var(--light-gray);
     font-size: 1.2em;
 
 }
-
+.scoreboard>div:nth-child(odd):hover{
+    border-radius: 50%;
+    background-color: var(--grayish-blue);
+    color:var(--very-light-gray)
+}
 
 
 
 .text {
-    border: 2px solid rgb(112, 157, 216);
+
     grid-area: text;
     margin: 7px 32px;
 }
@@ -231,3 +237,115 @@ cursor: pointer;
 .getinput > .submit:hover{
     opacity:.5;
 }
+
+
+
+.mymodal{
+    display:none;
+position:fixed;
+z-index: 9999998;
+left:0;
+top:0;
+width:100%;
+height:100%;
+overflow:auto;
+background-color: rgba(0,0,0,.3);
+justify-content: center;
+align-items:center;
+
+
+}
+.mymodalbox{
+    z-index: 9999999;
+border:1px solid var(--grayish-blue);
+border-radius: 5px;
+background-color: white;
+width:300px;
+padding:20px;
+font-size: 12px;
+}
+.mymodalbox > h2 {
+    margin-bottom:20px;
+}
+
+.modalbuttons{
+    display:flex;
+    flex-direction: row;
+justify-content: space-between;
+align-items: center;
+margin-top:30px;
+}
+.modalbuttons >* {
+width:100px;
+padding:10px;
+border-radius: 5px;
+background-color: var(--grayish-blue);
+text-align: center;
+color:white;
+font-weight:500;
+cursor: pointer;
+}
+.modalbuttonno:hover{
+    background-color: var(--light-gray);
+    color:black;
+}
+.modalbuttondelete{
+    background-color: var(--soft-red);
+}
+.modalbuttondelete:hover{
+    background-color: var(--pale-red);
+    color:black;
+}
+
+/*   Media Enquiry for Mobile */
+
+@media screen and (max-width: 700px) {
+
+
+.content{
+    margin: 5%;
+}
+
+.comment{
+    grid-template-areas:
+        "author author author"
+        "text text text"
+        "score buttons buttons " ;
+        grid-template-columns: auto auto auto;
+        grid-template-rows: 50px auto auto;
+}
+.comment.reply{
+    margin-left:15%;
+}
+
+.comment.reply::before{
+    left:-30px;
+}
+
+.scoreboard{
+    flex-direction: row;
+}
+.scoreboard >div{
+    width:30px;
+    font-size:.8em;
+}
+
+.buttons{
+    justify-content: flex-end;
+    text-align: right;
+}
+.buttons>*{
+    width:fit-content;
+    margin:0 5px;
+}
+
+.getinput{
+grid-template-columns: 60px auto 120px;
+}
+
+.getinput > .submit{
+    margin:10px ;
+    padding:5px;
+    width:80px;
+}
+  }

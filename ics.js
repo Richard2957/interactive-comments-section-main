@@ -35,7 +35,7 @@ function processInput(e) {
     const DOMgetinput = e.originalTarget.parentElement;
     const elemData = DOMgetinput.elemData;
     // Make a weak attempt at sanitiizing the text TODO make more secure
-    const newText = DOMgetinput.children[1].value.replace(/[^a-z0-9/?/!/'/"ßáéíóúñü \.,_-]/gim,"");
+    const newText = DOMgetinput.children[1].value.replace(/[^a-z0-9/?/!/'/"ßáéíóúñü@ \.,_-]/gim,"");
 
 
 
@@ -45,8 +45,9 @@ function processInput(e) {
         createHTMLElements();
         return
     }
+console.log(elemData);
 
-    if ((!elemData.is_reply) && (!elemData.is_edit)) { // New comment (not a reply)
+    if ((!elemData.is_reply) && (!elemData.is_edit) && (!elemData.replyingToUser)) { // New comment (not a reply)
         const newComment = {
             "id": getHighestId() + 1,
             "content": newText,
@@ -73,6 +74,37 @@ function processInput(e) {
         saveAndRefreshUI();
         return;
     }
+
+
+
+
+    if (  (!elemData.is_edit) && (elemData.replyingToUser)) { // Reply to a comment
+        const newComment = {
+            "id": getHighestId() + 1,
+            "content": newText,
+            "createdAt": "Today",
+            "score": 0,
+            "user": Object.assign(data.currentUser),
+          "replyingTo":elemData.author.username
+        };
+        const thisComment = data.comments.findIndex(x => x.id == elemData.comment_id);
+        data.comments[thisComment].replies.push(newComment)
+        saveAndRefreshUI();
+        return;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 
@@ -83,6 +115,9 @@ function processInput(e) {
 
 
 function getNewInput(elemData) {
+//Remove all getinputs
+const oldOnes=[...document.querySelectorAll(".getinput")];
+oldOnes.forEach(elem=> elem.parentNode.removeChild(elem)) 
 
 
     const getinput = document.createElement("div");
@@ -100,8 +135,7 @@ function getNewInput(elemData) {
         inp.setAttribute("placeholder", (elemData.is_reply) ? "Add a reply" : "Add a comment")
  }
 
-if(elemData.is_reply && (!elemData.is_edit)){
-
+if(  (!elemData.is_edit) && elemData.author.username){
     inp.innerHTML="@"+ elemData.author.username + "  ";
 }
 
@@ -148,6 +182,7 @@ function btnReply(e) {
     DOMparent.after(newInput);
    const ta= newInput.querySelector("textarea");
    const v=ta.innerHTML;
+   // Move cursor to end
    ta.innerHTML="";
    ta.focus();
    ta.innerHTML=v;
@@ -157,7 +192,13 @@ function btnReply(e) {
 
 }
 
-function btnDelete() {}
+function btnDelete(e) {
+    elemData = e.originalTarget.parentElement.parentElement.elemData;
+const mymodal=document.querySelector(".mymodal");
+mymodal.elemData=Object.assign(elemData);
+mymodal.style.display="flex";
+console.log(elemData)
+}
 
 
 
@@ -211,6 +252,7 @@ function createElement(elemData) {
     elButtonReplyEdit.setAttribute("onclick", "return false");
 
     elButtonReplyEdit.addEventListener("click", (elemData.IamAuthor) ? btnEdit : btnReply);
+    elButtonDelete.addEventListener("click",btnDelete )
     elButtons.append(elButtonDelete);
     elButtons.append(elButtonReplyEdit);
 
@@ -219,6 +261,7 @@ function createElement(elemData) {
     elScoreboard.append(elSc1);
     elScoreboard.append(elSc2);
     elScoreboard.append(elSc3);
+
     elSc1.innerHTML = "+";
     elSc2.innerHTML = elemData.score;
     elSc3.innerHTML = "-";
@@ -229,14 +272,38 @@ function createElement(elemData) {
     newElement.elemData = Object.assign(elemData);
     return newElement;
 
+}
 
+function scoreClick(inc, element, comment_id, reply_id){
+const thisComment=data.comments.findIndex(x=>x.id===comment_id);
+ 
 
+   if(reply_id){
+const thisReply=data.comments[thisComment].replies.findIndex(x=>x.id==reply_id);
+const newScore=data.comments[thisComment].replies[thisReply].score + inc;
+data.comments[thisComment].replies[thisReply].score=newScore;
+element.children[2].children[1].innerHTML=newScore;
+ } else {
+    const newScore=data.comments[thisComment].score + inc;
+    data.comments[thisComment].score=newScore;
+    element.children[2].children[1].innerHTML=newScore;
+ }
 
+ localStorage.setItem('ICSdata', JSON.stringify(data));
 }
 
 
 const createHTMLElements = () => {
     comments.innerHTML = ""; // deletes all 
+
+data.comments.sort((a,b)=>{
+if (a.score>b.score) return -1;
+if (a.score<b.score) return 1;
+return 0;
+
+});
+
+
     data.comments.forEach(c => {
         const elemData = {
             is_reply: false,
@@ -248,12 +315,15 @@ const createHTMLElements = () => {
             score: c.score,
             author: Object.assign(c.user),
             replyingToComment: null,
-            replyingToUser: null,
+            replyingToUser: c.user.username,
             IamAuthor: (c.user.username === data.currentUser.username)
         }
 
         const newElement = createElement(elemData);
         comments.append(newElement);
+        newElement.querySelector(".scoreboard>div:nth-child(1)").addEventListener("click",()=>scoreClick( 1,newElement,c.id,null))
+        newElement.querySelector(".scoreboard>div:nth-child(3)").addEventListener("click",()=>scoreClick(-1,newElement,c.id,null))
+
 
 
         c.replies.forEach(r => {
@@ -271,6 +341,9 @@ const createHTMLElements = () => {
             }
             const newReply = createElement(elemData)
             comments.append(newReply);
+            newReply.querySelector(".scoreboard>div:nth-child(1)").addEventListener("click",()=>scoreClick( 1,newReply,c.id,r.id))
+            newReply.querySelector(".scoreboard>div:nth-child(3)").addEventListener("click",()=>scoreClick( -1,newReply,c.id,r.id))
+
         })
     });
 
@@ -301,4 +374,27 @@ const createHTMLElements = () => {
 
 // Initialise by loading data, which calls createHTMLElements asynchronously
 
-loadData()
+loadData();
+
+// Initialise modal eventhandlers for Delete functionality
+document.querySelector(".modalbuttonno").addEventListener("click",()=>{
+    document.querySelector(".mymodal").style.display="none";
+})
+
+document.querySelector(".modalbuttondelete").addEventListener("click",(e)=>{
+const elemData=e.originalTarget.parentElement.parentElement.parentElement.elemData;
+
+console.log(elemData)
+const thisComment=data.comments.findIndex(x=>x.id==elemData.comment_id);
+   
+   if (!elemData.replyingToComment){
+data.comments.splice(thisComment,1)
+ } else {
+
+const thisReply=data.comments[thisComment].replies.find(x=>x.id==elemData.reply_id)
+data.comments[thisComment].replies.splice(thisReply,0);
+ }
+   saveAndRefreshUI();
+   
+    document.querySelector(".mymodal").style.display="none";
+})
