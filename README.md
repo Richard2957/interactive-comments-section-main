@@ -23,7 +23,7 @@ Users should be able to:
 
 ### Links
 
-- Solution URL: [Ahttps://github.com/Richard2957/interactive-comments-section-main](https://github.com/Richard2957/interactive-comments-section-main)
+- Solution URL: [https://github.com/Richard2957/interactive-comments-section-main](https://github.com/Richard2957/interactive-comments-section-main)
 - Live Site URL: [https://richard2957.github.io/interactive-comments-section-main/](https://richard2957.github.io/interactive-comments-section-main/)
 
 
@@ -36,7 +36,9 @@ Users should be able to:
 
 ### What I learned
 
-The javascript took longer to write than I had anticipated
+The javascript took longer to write than I had anticipated.
+
+Data saves in localstorage.
 
 ## Author
 
